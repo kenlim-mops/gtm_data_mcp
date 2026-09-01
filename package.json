@@ -1,0 +1,36 @@
+{
+  "name": "@runpod/gtm-data-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Universal MCP server for governed GTM operating context and optional UTM Builder access",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "dev:http": "tsx src/http.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/src/index.js",
+    "start:http": "node dist/src/http.js",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "admin:import": "tsx scripts/import.ts",
+    "admin:review": "tsx scripts/review.ts",
+    "sync": "tsx scripts/sync.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "pg": "^8.13.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.11"
+  }
+}

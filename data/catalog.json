@@ -1,0 +1,113 @@
+{
+  "records": [
+    {
+      "id": "gdr_utm_id",
+      "recordType": "data_field",
+      "key": "utm_id",
+      "name": "utm_id",
+      "summary": "Immutable Runpod campaign identifier minted by the UTM registry.",
+      "attributes": { "dataType": "string", "example": "rpc_01J…", "authority": "UTM Builder registry", "groupingLevel": "campaign" },
+      "sensitivity": "internal", "lifecycle": "active", "verificationState": "verified",
+      "lastVerifiedAt": "2026-08-31T00:00:00.000Z", "sourceUrl": null, "sourceUpdatedAt": null, "version": 1, "updatedAt": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "id": "gdr_utm_campaign",
+      "recordType": "data_field", "key": "utm_campaign", "name": "utm_campaign",
+      "summary": "Human-readable canonical campaign slug; use utm_id as the durable reporting join key.",
+      "attributes": { "dataType": "string", "authority": "UTM Builder registry", "groupingLevel": "campaign" },
+      "sensitivity": "internal", "lifecycle": "active", "verificationState": "verified",
+      "lastVerifiedAt": "2026-08-31T00:00:00.000Z", "sourceUrl": null, "sourceUpdatedAt": null, "version": 1, "updatedAt": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "id": "gdr_utm_source",
+      "recordType": "data_field", "key": "utm_source", "name": "utm_source",
+      "summary": "Governed traffic-source value selected from the active UTM taxonomy.",
+      "attributes": { "dataType": "string", "authority": "UTM taxonomy", "groupingLevel": "source" },
+      "sensitivity": "internal", "lifecycle": "active", "verificationState": "verified",
+      "lastVerifiedAt": "2026-08-31T00:00:00.000Z", "sourceUrl": null, "sourceUpdatedAt": null, "version": 1, "updatedAt": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "id": "gdr_utm_medium",
+      "recordType": "data_field", "key": "utm_medium", "name": "utm_medium",
+      "summary": "Governed channel classification associated with a source in the active UTM taxonomy.",
+      "attributes": { "dataType": "string", "authority": "UTM taxonomy", "groupingLevel": "channel" },
+      "sensitivity": "internal", "lifecycle": "active", "verificationState": "verified",
+      "lastVerifiedAt": "2026-08-31T00:00:00.000Z", "sourceUrl": null, "sourceUpdatedAt": null, "version": 1, "updatedAt": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "id": "gdr_rp_link_id",
+      "recordType": "data_field", "key": "rp_link_id", "name": "rp_link_id",
+      "summary": "Immutable identifier for one issued destination-plus-UTM combination.",
+      "attributes": { "dataType": "string", "example": "rpl_01J…", "authority": "UTM Builder registry", "groupingLevel": "link" },
+      "sensitivity": "internal", "lifecycle": "active", "verificationState": "verified",
+      "lastVerifiedAt": "2026-08-31T00:00:00.000Z", "sourceUrl": null, "sourceUpdatedAt": null, "version": 1, "updatedAt": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "id": "gdr_rp_initiative_id",
+      "recordType": "data_field", "key": "rp_initiative_id", "name": "rp_initiative_id",
+      "summary": "Optional immutable identifier grouping campaigns under a launch or broader GTM motion.",
+      "attributes": { "dataType": "string", "example": "rpi_01J…", "authority": "UTM Builder registry", "groupingLevel": "initiative" },
+      "sensitivity": "internal", "lifecycle": "active", "verificationState": "verified",
+      "lastVerifiedAt": "2026-08-31T00:00:00.000Z", "sourceUrl": null, "sourceUpdatedAt": null, "version": 1, "updatedAt": "2026-08-31T00:00:00.000Z"
+    },
+    {
+      "id": "gdr_utm_builder",
+      "recordType": "system", "key": "utm_builder", "name": "Runpod UTM Builder",
+      "summary": "Independent governed service for campaign IDs, link issuance, validation, duplicate prevention, and the UTM registry.",
+      "attributes": { "integration": "UTM_BUILDER_URL", "authentication": "bearer token", "runtimeDependencyForClicks": false },
+      "sensitivity": "internal", "lifecycle": "active", "verificationState": "verified",
+      "lastVerifiedAt": "2026-08-31T00:00:00.000Z", "sourceUrl": null, "sourceUpdatedAt": null, "version": 1, "updatedAt": "2026-08-31T00:00:00.000Z"
+    }
+  ],
+  "relationships": [
+    { "id": "gre_utm_builder_utm_id", "fromRecordId": "gdr_utm_builder", "toRecordId": "gdr_utm_id", "relationshipType": "produces", "isPrimary": true, "context": {}, "status": "active" },
+    { "id": "gre_utm_builder_link_id", "fromRecordId": "gdr_utm_builder", "toRecordId": "gdr_rp_link_id", "relationshipType": "produces", "isPrimary": true, "context": {}, "status": "active" }
+  ],
+  "templates": [
+    {
+      "id": "gbt_runpod_review", "key": "runpod_change_review", "name": "Runpod governed mass-change review", "platformKey": "runpod", "objectType": "catalog_record", "operation": "review_update", "format": "csv",
+      "columns": [
+        { "key": "record_key", "label": "Record key", "required": true },
+        { "key": "action", "label": "Action", "required": true, "allowedValues": ["create", "update", "deactivate"] },
+        { "key": "field", "label": "Field", "required": true },
+        { "key": "current_value", "label": "Current value" },
+        { "key": "proposed_value", "label": "Proposed value", "required": true },
+        { "key": "reason", "label": "Reason", "required": true }
+      ],
+      "examples": [{ "record_key": "google_ads", "action": "update", "field": "owner", "current_value": "", "proposed_value": "growth_marketing", "reason": "Operating model update" }],
+      "maxRows": 5000, "availabilityNotes": "Internal review format; imports create reviewed changes rather than bypassing approval.", "docsUrl": null, "verificationState": "verified", "lifecycle": "active"
+    },
+    {
+      "id": "gbt_google_ads", "key": "google_ads_editor_url_updates", "name": "Google Ads Editor URL updates", "platformKey": "google_ads", "objectType": "ad", "operation": "update_urls", "format": "csv",
+      "columns": [{ "key": "campaign", "label": "Campaign", "required": true }, { "key": "ad_group", "label": "Ad group", "required": true }, { "key": "final_url", "label": "Final URL", "required": true }, { "key": "tracking_template", "label": "Tracking template" }, { "key": "custom_parameter", "label": "Custom parameter" }],
+      "examples": [], "maxRows": 10000, "availabilityNotes": "Import and review as proposed changes in Google Ads Editor; confirm headers against a current account export.", "docsUrl": "https://support.google.com/google-ads/editor/answer/30564?hl=en", "verificationState": "draft", "lifecycle": "active"
+    },
+    {
+      "id": "gbt_linkedin", "key": "linkedin_campaign_manager_url_updates", "name": "LinkedIn Campaign Manager bulk URL updates", "platformKey": "linkedin_ads", "objectType": "creative", "operation": "update_urls", "format": "csv",
+      "columns": [{ "key": "campaign_group_id", "label": "Campaign Group ID", "required": true }, { "key": "campaign_id", "label": "Campaign ID", "required": true }, { "key": "creative_id", "label": "Creative ID", "required": true }, { "key": "destination_url", "label": "Destination URL", "required": true }],
+      "examples": [], "maxRows": 5000, "availabilityNotes": "Bulk CSV availability may be limited to eligible managed accounts; begin from a current export.", "docsUrl": "https://www.linkedin.com/help/lms/answer/a497878", "verificationState": "draft", "lifecycle": "active"
+    },
+    {
+      "id": "gbt_cm360", "key": "cm360_campaign_spreadsheet_urls", "name": "Campaign Manager 360 spreadsheet URL updates", "platformKey": "cm360", "objectType": "placement_or_ad", "operation": "update_urls", "format": "csv",
+      "columns": [{ "key": "campaign_id", "label": "Campaign ID", "required": true }, { "key": "placement_id", "label": "Placement ID" }, { "key": "ad_id", "label": "Ad ID" }, { "key": "landing_page_url", "label": "Landing Page URL", "required": true }],
+      "examples": [], "maxRows": 10000, "availabilityNotes": "Use a current CM360 campaign spreadsheet as the authoritative column topology.", "docsUrl": "https://support.google.com/campaignmanager/answer/2704625?hl=en", "verificationState": "draft", "lifecycle": "active"
+    },
+    {
+      "id": "gbt_hubspot", "key": "hubspot_campaign_record_updates", "name": "HubSpot campaign record updates", "platformKey": "hubspot", "objectType": "campaign_record", "operation": "update_records", "format": "csv",
+      "columns": [{ "key": "record_id", "label": "Record ID", "required": true }, { "key": "campaign_name", "label": "Campaign name" }, { "key": "campaign_status", "label": "Campaign status" }, { "key": "start_date", "label": "Start date" }, { "key": "end_date", "label": "End date" }],
+      "examples": [], "maxRows": 10000, "availabilityNotes": "Use HubSpot's unique record ID to update rather than create a duplicate.", "docsUrl": "https://knowledge.hubspot.com/import-and-export/import-records-for-a-single-object", "verificationState": "draft", "lifecycle": "active"
+    },
+    {
+      "id": "gbt_meta", "key": "meta_ads_url_change_plan", "name": "Meta Ads URL change plan", "platformKey": "meta_ads", "objectType": "ad", "operation": "update_urls", "format": "csv",
+      "columns": [{ "key": "campaign_id", "label": "Campaign ID", "required": true }, { "key": "ad_set_id", "label": "Ad set ID", "required": true }, { "key": "ad_id", "label": "Ad ID", "required": true }, { "key": "website_url", "label": "Website URL", "required": true }, { "key": "url_parameters", "label": "URL parameters" }],
+      "examples": [], "maxRows": 5000, "availabilityNotes": "Planning/validation format only until the current supported Meta import workflow is certified.", "docsUrl": null, "verificationState": "draft", "lifecycle": "active"
+    },
+    {
+      "id": "gbt_reddit", "key": "reddit_ads_url_change_plan", "name": "Reddit Ads URL change plan", "platformKey": "reddit_ads", "objectType": "ad", "operation": "update_urls", "format": "csv",
+      "columns": [{ "key": "campaign_id", "label": "Campaign ID", "required": true }, { "key": "ad_group_id", "label": "Ad group ID", "required": true }, { "key": "ad_id", "label": "Ad ID", "required": true }, { "key": "destination_url", "label": "Destination URL", "required": true }],
+      "examples": [], "maxRows": 5000, "availabilityNotes": "Planning/validation format only until a supported Reddit Ads bulk-import workflow is certified.", "docsUrl": null, "verificationState": "draft", "lifecycle": "active"
+    }
+  ],
+  "sourceUpdates": [],
+  "connectors": []
+}
