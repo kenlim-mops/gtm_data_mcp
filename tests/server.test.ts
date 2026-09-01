@@ -1,7 +1,9 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { afterEach, describe, expect, it } from "vitest";
+import { createHmac } from "node:crypto";
 import { bearerAuthorized } from "../src/auth.js";
+import { slackIdentityAllowed, slackIdentityFromBody, verifySlackSignature } from "../src/slack-auth.js";
 import { createGtmDataServer } from "../src/server.js";
 import { JsonCatalogStore } from "../src/stores/json.js";
 import { UtmBuilderClient } from "../src/utm-client.js";
@@ -55,5 +57,22 @@ describe("bearer authorization", () => {
     expect(bearerAuthorized("Bearer wrong", "correct")).toBe(false);
     expect(bearerAuthorized("Basic correct", "correct")).toBe(false);
     expect(bearerAuthorized(undefined, "correct")).toBe(false);
+  });
+});
+
+describe("Slack identity authorization", () => {
+  it("verifies current signed requests and rejects replays", () => {
+    const rawBody = '{"jsonrpc":"2.0","method":"tools/list"}';
+    const timestamp = "1700000000";
+    const signature = `v0=${createHmac("sha256", "secret").update(`v0:${timestamp}:${rawBody}`).digest("hex")}`;
+    expect(verifySlackSignature({ rawBody, timestamp, signature, signingSecret: "secret", nowSeconds: 1700000000 })).toBe(true);
+    expect(verifySlackSignature({ rawBody, timestamp, signature, signingSecret: "secret", nowSeconds: 1700000601 })).toBe(false);
+  });
+
+  it("extracts and allowlists signed-request identity metadata", () => {
+    const identity = slackIdentityFromBody({ params: { _meta: { slack: { user_id: "U1", team_id: null, enterprise_id: "E1" } } } });
+    expect(identity).toEqual({ userId: "U1", teamId: null, enterpriseId: "E1" });
+    expect(slackIdentityAllowed(identity!, "", "E1")).toBe(true);
+    expect(slackIdentityAllowed(identity!, "T2", "E2")).toBe(false);
   });
 });

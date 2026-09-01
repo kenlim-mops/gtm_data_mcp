@@ -42,6 +42,12 @@ Run `claude mcp list` to confirm the connection.
 
 Both clients can alternatively run the built local STDIO server. The remote service is preferred for normal use because everyone sees the same governed catalog.
 
+### Slackbot
+
+If the **Runpod GTM Ops** integration has been approved, open Slackbot, add it from Apps/Integrations, and ask the same questions in ordinary language. Slack shows the tool Slackbot intends to use and manages the user's authorization decision. The server uses the signed Slack user and enterprise/workspace IDs; users do not paste or configure an MCP token.
+
+For predictable URL creation, use `/utm` rather than relying on natural-language tool selection. See [Slack setup and operations](SLACK.md).
+
 ## 3. Everyday use
 
 You can ask in ordinary language. Useful request patterns include:
@@ -213,7 +219,7 @@ A reason is mandatory. If the catalog changed after proposal creation, approval 
 
 ### 6.6 Audit and incident response
 
-Administrative imports, auto-applied source updates, and proposal decisions create `gtm_audit_events`. Source runs and errors are stored separately. During an incident:
+Administrative imports, auto-applied source updates, proposal decisions, and successful Slack MCP tool calls create `gtm_audit_events`. Slack invocation events identify the tool and caller but omit tool arguments. Source runs and errors are stored separately. During an incident:
 
 1. Disable or pause the affected connector.
 2. Identify the relevant proposal, source record, and audit events.
@@ -224,7 +230,7 @@ Administrative imports, auto-applied source updates, and proposal decisions crea
 ## 7. Known V1 limits
 
 - No graphical admin panel yet; the service layer and audit requirements are ready for one.
-- No per-user authorization in fixed-token mode.
+- No per-user authorization in fixed-token mode; Slack identity mode is per-user but still depends on administrator-managed org and restricted-user allowlists.
 - Search is lexical, not semantic.
 - Notion is the only implemented reconciliation connector.
 - Bulk templates do not make platform API calls.

@@ -13,5 +13,13 @@ export interface CatalogStore {
   listTemplates(input?: { platformKey?: string; operation?: string }): Promise<BulkTemplate[]>;
   getTemplate(key: string): Promise<BulkTemplate | null>;
   listSourceUpdates(input?: { status?: SourceUpdate["status"]; connectorKey?: string; limit?: number }): Promise<SourceUpdate[]>;
+  recordInvocation?(event: {
+    actor: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    after?: Record<string, unknown>;
+    reason?: string;
+  }): Promise<void>;
   close?(): Promise<void>;
 }

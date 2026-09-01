@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { randomUUID } from "node:crypto";
 import type { CatalogStore } from "../store.js";
 import type {
   BulkTemplate,
@@ -148,6 +149,29 @@ export class PostgresCatalogStore implements CatalogStore {
       diff: row.diff,
       createdAt: new Date(row.created_at).toISOString(),
     }));
+  }
+
+  async recordInvocation(event: {
+    actor: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    after?: Record<string, unknown>;
+    reason?: string;
+  }) {
+    await this.pool.query(
+      `insert into gtm_audit_events (id, actor, action, entity_type, entity_id, after, reason)
+       values ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        `gta_${randomUUID()}`,
+        event.actor,
+        event.action,
+        event.entityType,
+        event.entityId,
+        event.after ?? null,
+        event.reason ?? null,
+      ],
+    );
   }
 
   async close() {

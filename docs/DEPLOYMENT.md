@@ -5,7 +5,7 @@ This guide covers local STDIO use and the recommended Runpod-internal Vercel dep
 ## 1. Production shape
 
 - **Runtime:** Node.js 20+ on Vercel Functions.
-- **MCP endpoint:** `POST /api/mcp` using stateless Streamable HTTP.
+- **MCP endpoints:** `POST /api/mcp` for bearer clients and `POST /api/slack/mcp` for Slack-signed identity requests, both using stateless Streamable HTTP.
 - **Health endpoint:** local HTTP only in V1; use Vercel function monitoring and an authenticated MCP initialization check in production.
 - **Database:** Runpod-approved managed PostgreSQL reachable from Vercel.
 - **Schedule:** [Vercel Cron](https://vercel.com/docs/cron-jobs/manage-cron-jobs) calls `/api/cron/sync` hourly at minute 17; each connector also enforces its own `scheduleMinutes`.
@@ -18,6 +18,10 @@ This guide covers local STDIO use and the recommended Runpod-internal Vercel dep
 | `DATABASE_URL` | Remote | PostgreSQL connection string |
 | `GTM_MCP_BEARER_TOKEN` | Remote | Protects `/api/mcp`; use a high-entropy secret |
 | `GTM_INCLUDE_RESTRICTED` | Optional | Defaults false; enable only for a separately reviewed deployment |
+| `SLACK_SIGNING_SECRET` | Slack | Verifies signed requests to `/api/slack/mcp` |
+| `SLACK_ALLOWED_ENTERPRISE_IDS` | Slack production | Comma-separated approved enterprise IDs |
+| `SLACK_ALLOWED_TEAM_IDS` | Slack optional | Comma-separated approved workspace IDs |
+| `SLACK_RESTRICTED_USER_IDS` | Slack optional | Explicit users eligible for restricted records when restricted access is enabled |
 | `CRON_SECRET` | Scheduled sync | Authenticates Vercel Cron requests |
 | `NOTION_API_TOKEN` | When Notion connectors exist | Read access to explicitly shared Notion sources |
 | `UTM_BUILDER_URL` | Optional | Base URL of the independent UTM Builder |
@@ -55,6 +59,7 @@ Configure automated backups and test point-in-time recovery. The minimum product
 7. Confirm `gtm_module_status`, search, definition lookup, template generation, and readiness checks.
 8. If UTM integration is enabled, confirm reference-data and preview calls first; do not issue a production URL as a smoke test.
 9. Promote the reviewed deployment to Production.
+10. If Slack is enabled, follow [SLACK.md](SLACK.md), then verify signed discovery, one tool call, outside-org denial, and invocation audit.
 
 The remote endpoint is:
 
@@ -75,6 +80,8 @@ Rotation procedure:
 5. Revoke/delete the old token and review access logs.
 
 A single shared token cannot provide reliable per-user attribution. Before access expands beyond a small internal group, add Runpod-approved OAuth or an identity-aware gateway. Preserve the MCP URL and transport where possible so clients need only reauthenticate.
+
+Slack is the first per-user remote identity path. It has a separate endpoint, verifies Slack's HMAC and five-minute timestamp window, reads the caller from signed `_meta.slack`, and can enforce enterprise/workspace/user allowlists. It does not replace authentication for Codex or Claude Code.
 
 ## 6. Client rollout
 

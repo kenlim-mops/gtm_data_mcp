@@ -14,6 +14,7 @@ The server is deliberately independent from the Runpod UTM Builder. Either produ
 - A scheduled Notion reconciliation connector that proposes changes for review.
 - PostgreSQL persistence, version checks, source evidence, locks, and an audit log.
 - Local STDIO and remote Streamable HTTP MCP transports.
+- A Slackbot MCP Client endpoint with request verification, org/workspace allowlisting, per-user identity, restricted-record controls, and invocation auditing.
 - An optional, separately authenticated UTM Builder adapter.
 
 V1 does **not** store credentials inside catalog records, write directly to advertising platforms, silently copy every Notion edit into the catalog, or make the UTM Builder depend on this server.
@@ -71,6 +72,17 @@ GTM_MCP_BEARER_TOKEN="replace-with-a-secret" npm run dev:http
 
 The endpoints are `http://localhost:8787/mcp` and `http://localhost:8787/health`.
 
+## Slack access
+
+The production deployment exposes two independent MCP entry points:
+
+- `/api/mcp` uses a bearer token for Codex, Claude Code, and other approved MCP clients.
+- `/api/slack/mcp` accepts only Slack-signed Streamable HTTP requests and reads the verified caller from `_meta.slack`.
+
+Connect the Slack endpoint to the shared **Runpod GTM Ops** Slack app using Slack identity auth. Users can then ask Slackbot questions such as “Who owns Google Ads and what is the escalation runbook?” without configuring an MCP client locally. Tool calls are attributed to the Slack enterprise/workspace/user identity and recorded in `gtm_audit_events`; tool arguments are deliberately excluded from the invocation audit payload.
+
+The canonical Slack app manifest and deterministic `/utm` workflow live in the companion [UTM Builder repository](https://github.com/kenlim-mops/utm_builder_v2). See [Slack setup and operations](docs/SLACK.md).
+
 ## Codex and Claude Code compatibility
 
 Yes. The server uses the open Model Context Protocol rather than a client-specific API. Both Codex and Claude Code support local STDIO and remote HTTP MCP servers; only their client configuration differs. The shared deployment recommendation is remote Streamable HTTP with HTTPS and authentication. See the [OpenAI MCP documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) and [Claude Code MCP documentation](https://code.claude.com/docs/en/mcp).
@@ -113,8 +125,8 @@ Every record carries lifecycle, sensitivity, verification state, source evidence
 
 ## Security posture
 
-- Remote requests require a fixed bearer token in V1.
-- The fixed token is an interim internal control; use Runpod-approved OAuth or an authenticated gateway before broader distribution.
+- Standard remote requests require a fixed bearer token in V1; Slack requests use Slack signatures and Slack identity instead.
+- Slack calls enforce timestamp-based replay protection and can be limited to approved enterprise/workspace IDs. Restricted records require a separate per-user allowlist.
 - Source updates are review-first. Auto-apply is possible only for existing records and an explicit per-connector top-level field allowlist.
 - Proposal approval uses optimistic version checks so a stale proposal cannot overwrite a newer catalog update.
 - UTM tokens and Notion tokens remain server-side.

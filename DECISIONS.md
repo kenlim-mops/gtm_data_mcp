@@ -121,3 +121,23 @@ This log records the material V1 decisions, their rationale, and the consequence
 **Why:** Two ID issuers would create the exact stitching and duplication risks the registry is intended to prevent.
 
 **Consequence:** UTM issuance requires the UTM API. Catalog-only usage does not.
+
+## D-013 — Use one Slack app with two independent service paths
+
+**Status:** Accepted
+
+**Decision:** Present one **Runpod GTM Ops** Slack app. Connect GTM Data to Slackbot through a Slack-identity MCP endpoint, and route deterministic `/utm` commands, shortcuts, and CSV uploads directly to the UTM Builder. Keep the normal bearer MCP endpoint for Codex/Claude and keep both repositories independently deployable.
+
+**Why:** Slack's conversational agent surface is well suited to discovery and context, while UTM issuance benefits from a fixed preview/confirm workflow that cannot depend on probabilistic tool choice. A thin Slack adapter avoids duplicating governance logic.
+
+**Consequence:** The Slack app requires administrator approval and scopes across both services. The MCP endpoint verifies Slack signatures and signed identity; the UTM endpoint resolves Slack users to existing Builder accounts. Failure of either backend is contained to its own path.
+
+## D-014 — Keep public source code separate from private operational data
+
+**Status:** Accepted
+
+**Decision:** The repository may be public, but production catalog records, personnel/vendor mappings, account identifiers, source evidence, audit history, database credentials, and Slack tokens remain in PostgreSQL and approved secret storage. The bundled JSON contains only generic schema examples and non-secret identifier definitions.
+
+**Why:** Public implementation supports review and reuse without publishing Runpod's operating graph or credentials.
+
+**Consequence:** Every pull request and seed change needs a secret/PII/internal-data review. Notion imports and production exports must never be committed.
